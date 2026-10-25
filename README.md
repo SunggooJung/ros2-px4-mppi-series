@@ -2,6 +2,25 @@
 
 [블로그 연재 목차](https://sunggoo.tistory.com/83)의 9-1~12-2편에 대응하는 제어기, ROS 2 연결, Gazebo/PX4 SITL 실험 소스입니다. 글과 코드를 함께 읽을 수 있도록 아래 표에서 각 회차의 핵심 파일로 연결합니다. 연재는 12-2에서 완결되었습니다.
 
+## 선행 회차에서 이어 읽기
+
+1~8편은 설치, 개념, 초기 예제를 설명합니다. 아래 파일은 그 내용을 후반 연재에서 발전시킨 **참조 구현**입니다. 초기 글의 코드 블록을 그대로 옮긴 파일은 아닙니다. 특히 7~8편 예제의 입력·좌표계와 9편 이후의 `[c_norm, p_sp, q_sp, r_sp]` 인터페이스를 그대로 연결해서 실행하면 안 됩니다.
+
+| 회차 | 블로그 글 | 이어 볼 코드 |
+| --- | --- | --- |
+| 1 | [환경 설정](https://sunggoo.tistory.com/83) | 설치 명령은 글 본문에 있습니다. |
+| 2 | [PX4·Gazebo·MAVROS 연결](https://sunggoo.tistory.com/85) | [`mppi_interface.launch.py`](offboard_control/launch/mppi_interface.launch.py): 후반 MPPI 연결용 launch |
+| 3 | [Offboard 기초](https://sunggoo.tistory.com/84) | [`offboard_control/`](offboard_control/): 후반 rate Offboard 패키지. 글의 위치 명령 예제와 인터페이스가 다릅니다. |
+| 4 | [ROS 2 패키지 구성](https://sunggoo.tistory.com/86) | [`offboard_control/`](offboard_control/): 연재 후반의 실제 패키지 구조 |
+| 5 | [MPPI의 직관](https://sunggoo.tistory.com/87) | [`controller.py`](simulation/mppi_series/controller.py): 완성된 샘플링·가중 업데이트 |
+| 6 | [쿼드로터 운동모델](https://sunggoo.tistory.com/88) | [`rigid_body_reference.py`](simulation/mppi_series/rigid_body_reference.py): SI 단위 참조 계산 |
+| 7-1 | [모터 배분](https://sunggoo.tistory.com/89) | [`rigid_body_reference.py`](simulation/mppi_series/rigid_body_reference.py): 힘·토크와 모터 회전속도의 단위를 구분한 참조 계산 |
+| 7-2 | [회전행렬·각속도](https://sunggoo.tistory.com/90) | [`rigid_body_reference.py`](simulation/mppi_series/rigid_body_reference.py): 회전·각속도 참조 계산 |
+| 8-1 | [MPPI 샘플링](https://sunggoo.tistory.com/92) | [`controller.py`](simulation/mppi_series/controller.py): 통합된 샘플링 제어기 |
+| 8-2 | [비용 함수](https://sunggoo.tistory.com/93) | [`controller.py`](simulation/mppi_series/controller.py), [`obstacles.py`](simulation/mppi_series/obstacles.py): 통합 비용 함수와 후속 장애물 확장 |
+
+## 구현·실험 회차
+
 | 회차 | 블로그 글 | 핵심 코드 |
 | --- | --- | --- |
 | 9-1 | [MPPI Controller 구현](https://sunggoo.tistory.com/96) | [`controller.py`](simulation/mppi_series/controller.py), [`example.py`](simulation/mppi_series/example.py) |
