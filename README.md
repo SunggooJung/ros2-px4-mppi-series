@@ -6,6 +6,31 @@
 
 1~8편은 설치, 개념, 초기 예제를 설명합니다. 아래 파일은 그 내용을 후반 연재에서 발전시킨 **참조 구현**입니다. 초기 글의 코드 블록을 그대로 옮긴 파일은 아닙니다. 특히 7~8편 예제의 입력·좌표계와 9편 이후의 `[c_norm, p_sp, q_sp, r_sp]` 인터페이스를 그대로 연결해서 실행하면 안 됩니다.
 
+### 왜 코드가 다른가?
+
+연재 중 제어기가 PX4에 넘기는 **명령의 수준**을 확정했습니다. 3~4편의 위치 목표, 7편의 힘·토크와 모터 배분, 8편의 샘플링 의사코드는 각각 다른 학습 단계입니다. 9편부터의 실제 MPPI 구현은 MAVROS `AttitudeTarget`의 몸체 각속도 목표와 정규화 추력을 사용합니다. PX4가 그 아래의 각속도 제어와 모터 배분을 수행하므로, 앞부분의 토크나 모터 속도 네 개를 후반 코드의 입력 네 개로 이름만 바꿔 넣을 수 없습니다.
+
+| 구간 | 입력과 목적 | 이 저장소에서 읽을 파일 |
+| --- | --- | --- |
+| 3~4편 | 위치 목표를 보내는 Offboard 입문 | `offboard_control/`은 **후반 rate 제어 패키지**이며 글의 위치 목표 노드와 같은 코드가 아닙니다. |
+| 7-1·7-2편 | `[T, τx, τy, τz]` (N, N·m)에서 설명용 모터 힘·속도와 강체 운동 계산 | [`rigid_body_reference.py`](simulation/mppi_series/rigid_body_reference.py). 모터 계수는 설명용이며 Gazebo 기체에서 식별한 값이 아닙니다. |
+| 8-1·8-2편 | 샘플 경로와 비용 항을 단계별로 보여 주는 예제 | [`controller.py`](simulation/mppi_series/controller.py)는 입력·상태·제약을 통일한 **후속 통합 구현**입니다. [`obstacles.py`](simulation/mppi_series/obstacles.py)는 11-2의 장애물 확장입니다. |
+| 9-1~12-2편 | `[c_norm, p_sp, q_sp, r_sp]` (무차원, FLU rad/s)로 PX4에 목표 전달 | [`controller.py`](simulation/mppi_series/controller.py), [`ros_interface.py`](simulation/mppi_series/ros_interface.py), [`ros_flight.py`](simulation/mppi_series/ros_flight.py) 순서로 확인하세요. |
+
+**초기 글의 오류도 있습니다.** 7-1편의 게시된 모터 함수는 모터 힘을 회전속도로 바꾸는 제곱근 변환이 없고 회전 방향 부호를 속도에 곱한 뒤 음수를 잘라냅니다. 예시 호버 요청 19.62 N에 대한 게시 함수 출력 `[4.905, 4.905, 0, 0]`을 rad/s로 해석하면 총 추력은 약 0.000411 N입니다. 7-2편에는 몸체 각속도 `(p,q,r)`를 Euler 각 변화율과 동일하게 적분하는 부분이 있습니다. 이 둘은 같은 값이 아닙니다. 위 참조 구현은 이 부분을 바로잡은 별도 모델이며, 당시 게시된 코드가 그대로 실행됐다는 뜻이 아닙니다. 검사는 **수학·Python 모델**에 한정되고 PX4·Gazebo 비행이나 실기체 검증은 아닙니다.
+
+아래 명령은 7편의 설명용 파라미터에서 2 kg 기체의 호버 힘을 네 모터에 균등 배분해 약 757.48 rad/s를 얻는 계산입니다. **9편 MPPI 명령을 생성하거나 PX4에 발행하지 않습니다.**
+
+```bash
+PYTHONPATH=simulation /usr/bin/python3 - <<'PY'
+from mppi_series.rigid_body_reference import SIParams, allocate, realized_wrench
+p = SIParams()
+omega = allocate([p.mass * 9.81, 0, 0, 0], p)
+print(omega)
+print(realized_wrench(omega, p))
+PY
+```
+
 | 회차 | 블로그 글 | 이어 볼 코드 |
 | --- | --- | --- |
 | 1 | [환경 설정](https://sunggoo.tistory.com/83) | 설치 명령은 글 본문에 있습니다. |
